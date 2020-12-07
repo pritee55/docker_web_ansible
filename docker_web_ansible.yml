@@ -1,0 +1,40 @@
+- hosts: all
+  tasks :
+          - name: "Docker repo"
+            copy:
+                 src: "/etc/yum.repos.d/docker.repo"
+                 dest: "/etc/yum.repos.d"
+                 
+          - name: "Installing Docker"
+            package:
+                  name: "docker-ce-18.09.1-3.el7.x86_64"
+                  state: present
+                  
+          - name: "Starting the docker service"
+            service :
+                  name : "docker"
+                  state : started
+                  enabled : yes
+
+          - name: "Install docker software for python3 using pip"
+            command: "pip3 install docker-py"
+               
+          - name: Pull a Docker Image
+            docker_image:
+                  name: httpd
+                  tag: latest
+                  source: pull
+
+          - name: "Copying the html pages in the directory"
+            template:
+              src: "/root/ansible/workspace1/myweb.html"
+              dest: "/usr/local/apache2/htdocs"
+
+          - name: "Launching an HTTPD container"
+            docker_container :
+                   name: 'httpd1'
+                   image: 'httpd'
+                   state: started
+                   exposed_ports: "80"
+                   ports: "8080:80"
+                    
